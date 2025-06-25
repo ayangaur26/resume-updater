@@ -4,21 +4,17 @@ const express = require('express');
 const cors = require('cors');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const dotenv = require('dotenv');
-const path = require('path');
-const fs = require('fs');
-const { exec } = require('child_process');
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3001;
 
+// --- Middleware ---
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 
-// NOTE: In a Vercel serverless environment, only the /tmp directory is writable.
-const tmpDir = path.join('/tmp');
-
+// --- AI and Resume Logic ---
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -68,6 +64,7 @@ RULES:
 const generateTex = (resume) => {
     const escapeTex = (str) => {
         if (!str) return '';
+        // This function now handles both structural LaTeX characters and common unicode symbols.
         return str.toString()
             .replace(/\\/g, '\\textbackslash{}')
             .replace(/&/g, '\\&').replace(/%/g, '\\%').replace(/\$/g, '\\$')
@@ -153,17 +150,14 @@ ${skillItems ? `\\section{Technical Skills}\\begin{itemize}[leftmargin=0.15in, l
 };
 
 app.post('/api/generate', async (req, res) => {
-    const uniqueId = `resume-${Date.now()}`;
-    const texFilePath = path.join(tmpDir, `${uniqueId}.tex`);
-    const pdfFilePath = path.join(tmpDir, `${uniqueId}.pdf`);
-
     try {
         const { instructions, resumeText } = req.body;
         if (!instructions || !resumeText) {
             return res.status(400).json({ error: "Missing instructions or resume text." });
         }
-        
+
         const prompt = `${systemPrompt}\n\n## User's Instructions:\n${instructions}\n\n## User's Current Resume Text:\n${resumeText}`;
+
         const result = await model.generateContent(prompt);
         const responseText = result.response.text();
         
@@ -173,51 +167,19 @@ app.post('/api/generate', async (req, res) => {
         }
         const cleanedJsonString = jsonMatch[0];
         const resumeJson = JSON.parse(cleanedJsonString);
-        
-        const texCode = generateTex(resumeJson);
-        fs.writeFileSync(texFilePath, texCode);
-        
-        // Note: For Vercel deployment, pdflatex must be installed via a custom build environment.
-        // The simplest way is to use a Dockerfile.
-        const command = `pdflatex -interaction=nonstopmode -output-directory=${tmpDir} -jobname=${uniqueId} ${texFilePath}`;
-        
-        await new Promise((resolve, reject) => {
-            exec(command, { timeout: 25000 }, (error, stdout, stderr) => {
-                if (error) {
-                    const logFilePath = path.join(tmpDir, `${uniqueId}.log`);
-                    let logContent = fs.existsSync(logFilePath) ? fs.readFileSync(logFilePath, 'utf8') : 'Could not read log file.';
-                    console.error(`exec error: ${error.message}`);
-                    const detailedError = `LaTeX compilation failed. Log: \n${logContent}`;
-                    return reject(new Error(detailedError));
-                }
-                resolve(stdout);
-            });
-        });
 
-        // Read the generated PDF into a buffer and convert to Base64
-        const pdfBuffer = fs.readFileSync(pdfFilePath);
-        const pdfBase64 = pdfBuffer.toString('base64');
+        const texCode = generateTex(resumeJson);
         
-        res.json({ 
-            tex: texCode, 
-            pdfBase64: pdfBase64 
-        });
+        // Return only the .tex code. No PDF generation.
+        res.json({ tex: texCode });
 
     } catch (error) {
         console.error("Error processing generation request:", error);
         res.status(500).json({ 
             error: error.message || "An internal server error occurred."
         });
-    } finally {
-        // Cleanup all generated files from the /tmp directory
-        const extensionsToDelete = ['.tex', '.aux', '.log', '.pdf'];
-        extensionsToDelete.forEach(ext => {
-            const fileToDelete = path.join(tmpDir, `${uniqueId}${ext}`);
-            if(fs.existsSync(fileToDelete)) fs.unlinkSync(fileToDelete);
-        });
     }
 });
 
-app.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`);
-});
+// This is important for Vercel to correctly handle the Express app
+module.exports = app;
