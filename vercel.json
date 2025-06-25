@@ -9,18 +9,18 @@
       }
     },
     {
-      "src": "api",
+      "src": "api/index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api"
+      "dest": "/api/index.js"
     },
     {
       "src": "/(.*)",
-      "dest": "/agentic-resume-frontend/$1"
+      "dest": "/agentic-resume-frontend/index.html"
     }
   ]
 }
