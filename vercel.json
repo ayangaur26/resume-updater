@@ -5,20 +5,18 @@
       "src": "agentic-resume-frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist",
-        "installCommand": "npm install",
-        "buildCommand": "npm run build"
+        "distDir": "dist"
       }
     },
     {
-      "src": "api/index.js",
+      "src": "api",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api/index.js"
+      "dest": "/api"
     },
     {
       "src": "/(.*)",
