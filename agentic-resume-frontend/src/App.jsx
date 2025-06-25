@@ -122,8 +122,8 @@ export default function App() {
                     onDrop={handleDrop}
                 >
                     <div className="input-header">
-                       <h1>Agentic Resume Generator</h1>
-                       <p>Describe your changes and attach your resume. The AI will handle the rest.</p>
+                       <h1>AI Powered Resume Modifier</h1>
+                       <p>Describe your changes and attach your resume. We will handle the rest for you.</p>
                     </div>
                     <div className={`dropzone ${isDragging ? 'dragging-over' : ''}`}>
                          <textarea
@@ -179,7 +179,7 @@ export default function App() {
                     </div>
                     {error && <div className="error-container">{error}</div>}
                     <div className="built-by-footer">
-                       Built with ❤️ by an AI Agent
+                       Built by Ayan Gaur.
                     </div>
                 </div>
             </div>
