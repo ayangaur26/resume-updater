@@ -10,7 +10,7 @@
     },
     {
       "src": "api/index.js",
-      "use": "@vercel-community/latex"
+      "use": "vercel-pdflatex"
     }
   ],
   "routes": [
