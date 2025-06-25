@@ -1,0 +1,22 @@
+# Dependencies
+/node_modules
+/agentic-resume-frontend/node_modules
+
+# Vite build output
+/agentic-resume-frontend/dist
+
+# Environment variables
+.env
+/api/.env
+
+# macOS folder
+.DS_Store
+
+# Temporary files created by the backend
+/api/public/
+/api/tmp/
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

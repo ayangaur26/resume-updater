@@ -1,0 +1,293 @@
+/* --- Google Font Import --- */
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@500;700&family=Plus+Jakarta+Sans:wght@500&family=Roboto+Mono:wght@400&display=swap');
+
+/* --- CSS Variables for Theming --- */
+:root {
+  --font-sans: 'Plus Jakarta Sans', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-serif-var: 'Lora', serif; /* The new sleek serif font */
+  --font-typewriter: 'Roboto Mono', monospace;
+
+  --color-bg: #fbf9f4; /* Warmer, lighter cream */
+  --color-surface: #ffffff;
+  --color-text-primary: #262626; /* Slightly softer black */
+  --color-text-secondary: #737373;
+  --color-border: #f0ebe5; /* Softer, Cream-toned Border */
+  --color-border-dashed-hover: #d1d5db;
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+
+  --color-code-bg: #1f2937;
+  --color-code-text: #d1d5db;
+
+  --color-error: #ef4444;
+  --color-chip-bg: #e0e7ff;
+  --color-chip-text: #3730a3;
+  --color-chip-hover: #c7d2fe;
+}
+
+/* --- Base Styles & Resets --- */
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* --- Main App Layout --- */
+.app-shell {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  width: 100vw;
+}
+
+.input-panel, .output-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.input-panel {
+  width: 45%;
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+}
+
+.output-panel {
+  width: 55%;
+  background-color: var(--color-bg);
+}
+
+@media (max-width: 1024px) {
+  .output-panel { display: none; }
+  .input-panel { width: 100%; border-right: none; }
+}
+
+/* --- Integrated Input/Dropzone Area --- */
+.input-area {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.input-header h1 {
+    font-family: var(--font-serif-var); /* Using the new font */
+    font-size: 2rem;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.2;
+}
+
+.input-header p {
+    font-family: var(--font-sans); /* Keeping sans-serif for body text */
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    max-width: 45ch;
+}
+
+.dropzone {
+  flex-grow: 1;
+  border: 2px dashed var(--color-border);
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s, background-color 0.2s;
+  margin-top: 2rem;
+}
+
+.dropzone.dragging-over {
+  border-color: var(--color-border-dashed-hover);
+  background-color: #f9fafb;
+}
+
+.instructions-textarea {
+  flex-grow: 1;
+  width: 100%;
+  padding: 1.25rem;
+  border: none;
+  border-radius: 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  background-color: transparent;
+  resize: none;
+}
+.instructions-textarea:focus {
+  outline: none;
+}
+
+.input-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.attachment-area {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upload-text-button {
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--color-text-secondary);
+  background-color: transparent;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.upload-text-button:hover {
+  background-color: #f9fafb;
+  color: var(--color-text-primary);
+}
+
+
+.file-chip {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-chip-bg);
+  color: var(--color-chip-text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  padding: 0.25rem 0.25rem 0.25rem 0.75rem;
+  border-radius: 9999px;
+  animation: pop-in 0.2s ease-out;
+}
+
+@keyframes pop-in {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+
+.file-chip-remove {
+  margin-left: 0.5rem;
+  padding: 0.25rem;
+  border-radius: 9999px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.file-chip-remove:hover {
+  background-color: var(--color-chip-hover);
+}
+
+.send-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 9999px;
+  background-color: var(--color-accent);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.send-button:hover:not(:disabled) {
+  background-color: var(--color-accent-hover);
+}
+
+.send-button:disabled {
+  background-color: #e5e7eb;
+  cursor: not-allowed;
+}
+
+
+/* --- Output Panel --- */
+.output-header {
+  padding: 2rem 2rem 1rem 2rem;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--color-bg);
+}
+.output-header h2 {
+  font-family: var(--font-serif-var); /* Using the new font */
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: 0;
+}
+.output-buttons { display: flex; gap: 0.5rem; }
+.output-buttons button, .output-buttons a {
+  font-size: 0.875rem;
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  padding: 0.3rem 0.8rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: background-color 0.2s, color 0.2s;
+}
+.output-buttons button:hover, .output-buttons a:hover { 
+  background-color: #f9fafb;
+  color: var(--color-text-primary);
+}
+.output-buttons a.disabled { opacity: 0.5; cursor: not-allowed; background-color: var(--color-surface); color: var(--color-text-secondary);}
+
+.output-main {
+  flex-grow: 1;
+  padding: 1.5rem 2rem;
+  background-color: var(--color-code-bg);
+  color: var(--color-code-text);
+  font-family: var(--font-mono);
+  overflow-y: auto;
+}
+.output-main pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* --- Loader and Error --- */
+.built-by-footer {
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.875rem;
+    font-family: var(--font-sans);
+    color: var(--color-text-secondary);
+    margin-top: auto; /* Pushes to the bottom */
+}
+.error-container { padding: 1.5rem; text-align: center; color: var(--color-error); }
+
+/* Utility to properly hide the file input */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}

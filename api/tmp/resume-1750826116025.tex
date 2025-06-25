@@ -1,0 +1,106 @@
+
+\documentclass[letterpaper,11pt]{article}
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{fontawesome5}
+\usepackage{multicol}
+\setlength{\multicolsep}{0pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot{}
+\setlength{\footskip}{4.08003pt}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-.5in}
+\addtolength{\textheight}{1.0in}
+\urlstyle{same}
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+\pdfgentounicode=1
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+\newcommand{\resumeSubSubheading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \textit{\small#1} & \textit{\small #2} \\
+    \end{tabular*}\vspace{-7pt}
+}
+\newcommand{\resumeProjectHeading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 & #2 \\
+    \end{tabular*}\vspace{-7pt}
+}
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+\renewcommand\labelitemii{\textbullet}
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+\begin{document}
+\begin{center}
+    \textbf{\Huge \scshape Ayan Gaur} \\ \vspace{1pt}
+    \small +1 (858) 281 - 1254 $ \| \href{mailto:ayan.gaur@gmail.com}{\underline{ayan.gaur@gmail.com}} $ \| \href{https://ayangaur26.github.io}{\underline{ayangaur26.github.io}} $ \| \href{https://github.com/ayangaur26}{\underline{github.com/ayangaur26}}
+\end{center}
+\section{Education}
+    \resumeSubHeadingListStart
+    
+    \resumeSubheading
+        {University of California San Diego}{Sep. 2022 - Mar. 2026}
+        {B.S. Mathematics and Computer Science}{GPA: 3.7, Provost Honors, Courses: DSA, ML, Embedded Systems, OS, Recommender Systems, Linear Programming, Computer Vision, Statistics}
+    \resumeSubheading
+        {Cornell University}{May 2024 - Aug. 2024}
+        {Machine Learning Foundations Certificate}{}
+    \resumeSubHeadingListEnd
+\section{Experience}
+    \resumeSubHeadingListStart
+    
+    \resumeSubheading
+        {American Express}{Aug. 2024 - Dec. 2024}
+        {ML Intern}{}
+        \resumeItemListStart
+            \resumeItem{Fine-tuned DeBERTa and DistilBERT models to develop a sensitive data discovery pipeline, achieving 79\textbackslash{}% accuracy and applying custom regex solutions to accurately identify incorrectly classified data by 30\textbackslash{}%}
+            \resumeItem{Optimized BIO-label alignment using tokenization strategies reducing over-redaction and false positives by 25\textbackslash{}% through cross-validation and hyperparameter tuning, using iterative model optimization}
+            \resumeItem{Integrated contextual NER techniques, achieving 76\textbackslash{}% precision, 72\textbackslash{}% recall across diverse financial text datasets}
+        \resumeItemListEnd
+    \resumeSubheading
+        {Image Infosystems}{July 2024 - Sep. 2024}
+        {Computer Vision Intern}{}
+        \resumeItemListStart
+            \resumeItem{Developed high-accuracy OCR models with 94.4\textbackslash{}% accuracy and <4.8\textbackslash{}% loss while using a custom ONNX function converting TensorFlow models to PyTorch ensuring complete retention of model accuracy}
+            \resumeItem{Improved cheque verification accuracy by 18\textbackslash{}% through algorithm enhancements for image preprocessing and feature extraction in high-security bank applications}
+        \resumeItemListEnd
+    \resumeSubHeadingListEnd
+\section{Technical Skills}
+    \begin{itemize}[leftmargin=0.15in, label={}]
+        \small{\item{
+        Languages: Python, Java, C/C++, Dart, Bash, R, ARM, HTML, CSS, JavaScript, TypeScript. Frameworks: TensorFlow, PyTorch, Keras, Flask, Flutter, Next.js, Tailwind CSS. Developer Tools: Git, ONNX, Power BI, Firebase, MATLAB, Microsoft Office (Excel, Word, Outlook). Libraries: Pandas, NumPy, Seaborn, Matplotlib, Scikit-Learn, React
+        }}
+    \end{itemize}
+\end{document}
