@@ -9,8 +9,8 @@
       }
     },
     {
-      "src": "api/index.js",
-      "use": "vercel-pdflatex"
+      "src": "api/Dockerfile",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
