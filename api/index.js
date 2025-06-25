@@ -15,12 +15,9 @@ const port = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
-app.use('/public', express.static(path.join(__dirname, 'public')));
 
-const publicDir = path.join(__dirname, 'public');
-const tmpDir = path.join(__dirname, 'tmp');
-if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir);
-if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
+// NOTE: In a Vercel serverless environment, only the /tmp directory is writable.
+const tmpDir = path.join('/tmp');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -71,50 +68,26 @@ RULES:
 const generateTex = (resume) => {
     const escapeTex = (str) => {
         if (!str) return '';
-        // This function now handles both structural LaTeX characters and common unicode symbols.
         return str.toString()
-            // First, escape the structural characters. Order is important.
             .replace(/\\/g, '\\textbackslash{}')
             .replace(/&/g, '\\&').replace(/%/g, '\\%').replace(/\$/g, '\\$')
             .replace(/#/g, '\\#').replace(/_/g, '\\_').replace(/{/g, '\\{')
             .replace(/}/g, '\\}').replace(/~/g, '\\textasciitilde{}')
             .replace(/\^/g, '\\textasciicircum{}')
-            // Then, convert common unicode math/science symbols.
-            .replace(/μ/g, '$\\mu$') // mu -> \mu
-            .replace(/α/g, '$\\alpha$') // alpha -> \alpha
-            .replace(/β/g, '$\\beta$') // beta -> \beta
-            .replace(/→/g, '$\\rightarrow$') // right arrow -> \rightarrow
-            .replace(/•/g, '$\\bullet$'); // bullet -> \bullet
+            .replace(/μ/g, '$\\mu$').replace(/α/g, '$\\alpha$').replace(/β/g, '$\\beta$');
     };
-
-    const workItems = (resume.experience || []).map(exp => {
-        const descriptionPoints = Array.isArray(exp.description) ? exp.description : [];
-        const items = descriptionPoints.filter(d => d && d.trim() !== '').map(d => `\\resumeItem{${escapeTex(d)}}`).join('\n            ');
-        return `
-    \\resumeSubheading
-        {${escapeTex(exp.company)}}{${escapeTex(exp.dates)}}
-        {${escapeTex(exp.role)}}{${escapeTex(exp.location || '')}}
+    const workItems = (resume.experience || []).map(exp => `
+    \\resumeSubheading{${escapeTex(exp.company)}}{${escapeTex(exp.dates)}}{${escapeTex(exp.role)}}{${escapeTex(exp.location || '')}}
         \\resumeItemListStart
-            ${items}
-        \\resumeItemListEnd`;
-    }).join('');
-
+            ${(Array.isArray(exp.description) ? exp.description : []).filter(d => d && d.trim() !== '').map(d => `\\resumeItem{${escapeTex(d)}}`).join('\n            ')}
+        \\resumeItemListEnd`).join('');
     const eduItems = (resume.education || []).map(edu => `
-    \\resumeSubheading
-        {${escapeTex(edu.institution)}}{${escapeTex(edu.dates)}}
-        {${escapeTex(edu.degree)}}{${escapeTex(edu.details || '')}}`).join('');
-
-    const projectItems = (resume.projects || []).map(proj => {
-        const descriptionPoints = Array.isArray(proj.description) ? proj.description : [];
-        const items = descriptionPoints.filter(d => d && d.trim() !== '').map(d => `\\resumeItem{${escapeTex(d)}}`).join('\n            ');
-        return `
-    \\resumeProjectHeading
-        {\\textbf{${escapeTex(proj.name)}}}{${escapeTex(proj.dates)}}
+    \\resumeSubheading{${escapeTex(edu.institution)}}{${escapeTex(edu.dates)}}{${escapeTex(edu.degree)}}{${escapeTex(edu.details || '')}}`).join('');
+    const projectItems = (resume.projects || []).map(proj => `
+    \\resumeProjectHeading{\\textbf{${escapeTex(proj.name)}}}{${escapeTex(proj.dates)}}
         \\resumeItemListStart
-            ${items}
-        \\resumeItemListEnd`;
-    }).join('');
-    
+            ${(Array.isArray(proj.description) ? proj.description : []).filter(d => d && d.trim() !== '').map(d => `\\resumeItem{${escapeTex(d)}}`).join('\n            ')}
+        \\resumeItemListEnd`).join('');
     const skills = resume.skills || {};
     const skillItems = [
         skills.languages && `\\textbf{Languages}{: ${escapeTex(skills.languages)}}`,
@@ -122,7 +95,6 @@ const generateTex = (resume) => {
         skills.developerTools && `\\textbf{Developer Tools}{: ${escapeTex(skills.developerTools)}}`,
         skills.libraries && `\\textbf{Libraries}{: ${escapeTex(skills.libraries)}}`
     ].filter(Boolean).join(' \\\\\n      ');
-
     return `
 \\documentclass[letterpaper,11pt]{article}
 \\usepackage[T1]{fontenc}
@@ -157,35 +129,11 @@ const generateTex = (resume) => {
 \\raggedbottom
 \\raggedright
 \\setlength{\\tabcolsep}{0in}
-\\titleformat{\\section}{
-  \\vspace{-4pt}\\scshape\\raggedright\\large
-}{}{0em}{}[\\color{black}\\titlerule \\vspace{-5pt}]
+\\titleformat{\\section}{\\vspace{-4pt}\\scshape\\raggedright\\large}{}{0em}{}[\\color{black}\\titlerule \\vspace{-5pt}]
 \\pdfgentounicode=1
-\\newcommand{\\resumeItem}[1]{
-  \\item\\small{
-    {#1 \\vspace{-2pt}}
-  }
-}
-\\newcommand{\\resumeSubheading}[4]{
-  \\vspace{-2pt}\\item
-    \\begin{tabular*}{0.97\\textwidth}[t]{l@{\\extracolsep{\\fill}}r}
-      \\textbf{#1} & #2 \\\\
-      \\textit{\\small#3} & \\textit{\\small #4} \\\\
-    \\end{tabular*}\\vspace{-7pt}
-}
-\\newcommand{\\resumeSubSubheading}[2]{
-    \\item
-    \\begin{tabular*}{0.97\\textwidth}{l@{\\extracolsep{\\fill}}r}
-      \\textit{\\small#1} & \\textit{\\small #2} \\\\
-    \\end{tabular*}\\vspace{-7pt}
-}
-\\newcommand{\\resumeProjectHeading}[2]{
-    \\item
-    \\begin{tabular*}{0.97\\textwidth}{l@{\\extracolsep{\\fill}}r}
-      \\small#1 & #2 \\\\
-    \\end{tabular*}\\vspace{-7pt}
-}
-\\newcommand{\\resumeSubItem}[1]{\\resumeItem{#1}\\vspace{-4pt}}
+\\newcommand{\\resumeItem}[1]{\\item\\small{{#1 \\vspace{-2pt}}}}
+\\newcommand{\\resumeSubheading}[4]{\\vspace{-2pt}\\item\\begin{tabular*}{0.97\\textwidth}[t]{l@{\\extracolsep{\\fill}}r}\\textbf{#1} & #2 \\\\ \\textit{\\small#3} & \\textit{\\small #4} \\\\ \\end{tabular*}\\vspace{-7pt}}
+\\newcommand{\\resumeProjectHeading}[2]{\\item\\begin{tabular*}{0.97\\textwidth}{l@{\\extracolsep{\\fill}}r}\\small#1 & #2 \\\\ \\end{tabular*}\\vspace{-7pt}}
 \\renewcommand\\labelitemii{\\textbullet}
 \\newcommand{\\resumeSubHeadingListStart}{\\begin{itemize}[leftmargin=0.15in, label={}]}
 \\newcommand{\\resumeSubHeadingListEnd}{\\end{itemize}}
@@ -196,103 +144,77 @@ const generateTex = (resume) => {
     \\textbf{\\Huge \\scshape ${escapeTex(resume.name)}} \\\\ \\vspace{1pt}
     \\small ${resume.phone ? `${escapeTex(resume.phone)} $\\|$` : ''} \\href{mailto:${escapeTex(resume.email)}}{\\underline{${escapeTex(resume.email)}}} ${resume.linkedin ? `$\\|$ \\href{https://${escapeTex(resume.linkedin)}}{\\underline{${escapeTex(resume.linkedin)}}}` : ''} ${resume.github ? `$\\|$ \\href{https://github.com/${escapeTex(resume.github)}}{\\underline{github.com/${escapeTex(resume.github)}}}` : ''}
 \\end{center}
-${eduItems ? `\\section{Education}
-    \\resumeSubHeadingListStart
-    ${eduItems}
-    \\resumeSubHeadingListEnd` : ''}
-${workItems ? `\\section{Experience}
-    \\resumeSubHeadingListStart
-    ${workItems}
-    \\resumeSubHeadingListEnd` : ''}
-${projectItems ? `\\section{Projects}
-    \\resumeSubHeadingListStart
-    ${projectItems}
-    \\resumeSubHeadingListEnd` : ''}
-${skillItems ? `\\section{Technical Skills}
-    \\begin{itemize}[leftmargin=0.15in, label={}]
-        \\small{\\item{
-        ${skillItems}
-        }}
-    \\end{itemize}` : ''}
+${eduItems ? `\\section{Education}\\resumeSubHeadingListStart ${eduItems} \\resumeSubHeadingListEnd` : ''}
+${workItems ? `\\section{Experience}\\resumeSubHeadingListStart ${workItems} \\resumeSubHeadingListEnd` : ''}
+${projectItems ? `\\section{Projects}\\resumeSubHeadingListStart ${projectItems} \\resumeSubHeadingListEnd` : ''}
+${skillItems ? `\\section{Technical Skills}\\begin{itemize}[leftmargin=0.15in, label={}]\\small{\\item{ ${skillItems} }}\\end{itemize}` : ''}
 \\end{document}
 `;
 };
 
 app.post('/api/generate', async (req, res) => {
-    console.log("--- New Request Received ---");
     const uniqueId = `resume-${Date.now()}`;
     const texFilePath = path.join(tmpDir, `${uniqueId}.tex`);
+    const pdfFilePath = path.join(tmpDir, `${uniqueId}.pdf`);
 
     try {
         const { instructions, resumeText } = req.body;
         if (!instructions || !resumeText) {
             return res.status(400).json({ error: "Missing instructions or resume text." });
         }
-        console.log("Step 1: Received instructions and resume text.");
-
+        
         const prompt = `${systemPrompt}\n\n## User's Instructions:\n${instructions}\n\n## User's Current Resume Text:\n${resumeText}`;
-        console.log("Step 2: Sending prompt to Gemini API.");
-
         const result = await model.generateContent(prompt);
         const responseText = result.response.text();
-        console.log("Step 3: Received response from Gemini.");
-
+        
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
             throw new Error("AI response did not contain a valid JSON object.");
         }
         const cleanedJsonString = jsonMatch[0];
         const resumeJson = JSON.parse(cleanedJsonString);
-        console.log("Step 4: Successfully parsed JSON from AI response.");
-
+        
         const texCode = generateTex(resumeJson);
-        console.log("Step 5: Generated .tex code from JSON.");
         fs.writeFileSync(texFilePath, texCode);
-        console.log(`Step 6: Wrote .tex file to ${texFilePath}`);
-
-        const pdflatexPath = process.env.PDFLATEX_PATH || 'pdflatex';
-        const command = `${pdflatexPath} -interaction=nonstopmode -output-directory=${publicDir} -jobname=${uniqueId} ${texFilePath}`;
-        console.log(`Step 7: Executing command: ${command}`);
-
+        
+        // Note: For Vercel deployment, pdflatex must be installed via a custom build environment.
+        // The simplest way is to use a Dockerfile.
+        const command = `pdflatex -interaction=nonstopmode -output-directory=${tmpDir} -jobname=${uniqueId} ${texFilePath}`;
+        
         await new Promise((resolve, reject) => {
             exec(command, { timeout: 25000 }, (error, stdout, stderr) => {
                 if (error) {
-                    const logFilePath = path.join(publicDir, `${uniqueId}.log`);
-                    let logContent = 'Could not read log file.';
-                    if (fs.existsSync(logFilePath)) {
-                        logContent = fs.readFileSync(logFilePath, 'utf8');
-                    }
+                    const logFilePath = path.join(tmpDir, `${uniqueId}.log`);
+                    let logContent = fs.existsSync(logFilePath) ? fs.readFileSync(logFilePath, 'utf8') : 'Could not read log file.';
                     console.error(`exec error: ${error.message}`);
-                    const detailedError = `LaTeX compilation failed. The AI may have generated invalid code. Please check the .tex output. \n\n--- LaTeX Log ---\n${logContent}`;
+                    const detailedError = `LaTeX compilation failed. Log: \n${logContent}`;
                     return reject(new Error(detailedError));
-                }
-                console.log(`Step 8: pdflatex command executed successfully.`);
-                if(stderr){
-                    console.warn(`pdflatex stderr (warnings): ${stderr}`);
                 }
                 resolve(stdout);
             });
         });
 
-        const pdfUrl = `/public/${uniqueId}.pdf`;
-        console.log(`Step 9: PDF generated. URL: ${pdfUrl}`);
+        // Read the generated PDF into a buffer and convert to Base64
+        const pdfBuffer = fs.readFileSync(pdfFilePath);
+        const pdfBase64 = pdfBuffer.toString('base64');
         
-        res.json({ tex: texCode, pdfUrl: pdfUrl });
+        res.json({ 
+            tex: texCode, 
+            pdfBase64: pdfBase64 
+        });
 
     } catch (error) {
-        console.error("--- Request Failed ---");
         console.error("Error processing generation request:", error);
-        res.status(500).json({ error: error.message || "An internal server error occurred." });
-    } finally {
-        const extensionsToDelete = ['.tex', '.aux', '.log'];
-        extensionsToDelete.forEach(ext => {
-            const tempFile = path.join(tmpDir, `${uniqueId}${ext}`);
-            if(fs.existsSync(tempFile)) fs.unlinkSync(tempFile);
-            
-            const publicFile = path.join(publicDir, `${uniqueId}${ext}`);
-            if(fs.existsSync(publicFile)) fs.unlinkSync(publicFile);
+        res.status(500).json({ 
+            error: error.message || "An internal server error occurred."
         });
-        console.log("--- Request Finished & Cleaned Up ---");
+    } finally {
+        // Cleanup all generated files from the /tmp directory
+        const extensionsToDelete = ['.tex', '.aux', '.log', '.pdf'];
+        extensionsToDelete.forEach(ext => {
+            const fileToDelete = path.join(tmpDir, `${uniqueId}${ext}`);
+            if(fs.existsSync(fileToDelete)) fs.unlinkSync(fileToDelete);
+        });
     }
 });
 

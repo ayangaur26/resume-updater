@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 
-// PDF.js Worker Configuration
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.mjs`;
 
 // --- Inline SVG Icons ---
@@ -18,7 +17,7 @@ export default function App() {
     const [isDragging, setIsDragging] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [texCode, setTexCode] = useState(`% Your generated LaTeX code will appear here.`);
-    const [pdfUrl, setPdfUrl] = useState(null);
+    const [pdfDataUrl, setPdfDataUrl] = useState(null);
     const [error, setError] = useState('');
 
     const fileInputRef = useRef(null);
@@ -32,7 +31,6 @@ export default function App() {
         e.target.value = null; 
     };
     
-    // --- Drag and Drop Handlers ---
     const handleDragEnter = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
     const handleDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
     const handleDragOver = (e) => { e.preventDefault(); e.stopPropagation(); };
@@ -51,15 +49,8 @@ export default function App() {
 
         setIsLoading(true);
         setError('');
-        setPdfUrl(null);
+        setPdfDataUrl(null);
         setTexCode('% Processing your resume...');
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => {
-            controller.abort();
-            setError("Request timed out. The server may be busy or the resume is too complex. Please try again.");
-            setIsLoading(false);
-        }, 30000);
 
         try {
             let parsedResumeText = '';
@@ -85,14 +76,12 @@ export default function App() {
                 parsedResumeText = await resumeFile.text();
             }
 
-            const backendUrl = '';
+            const backendUrl = ''; // Use relative path for production
             const response = await fetch(`${backendUrl}/api/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ instructions, resumeText: parsedResumeText }),
-                signal: controller.signal
             });
-            clearTimeout(timeoutId);
 
             if (!response.ok) {
                  const errorData = await response.json();
@@ -101,16 +90,15 @@ export default function App() {
             
             const data = await response.json();
             setTexCode(data.tex);
-            setPdfUrl(`${backendUrl}${data.pdfUrl}`);
+            if (data.pdfBase64) {
+                setPdfDataUrl(`data:application/pdf;base64,${data.pdfBase64}`);
+            }
 
         } catch (err) {
-            if (err.name !== 'AbortError') {
-                setError(`Failed to generate resume: ${err.message}`);
-                setTexCode(`% Generation failed. Please check the .tex output for errors.`);
-            }
+            setError(`Failed to generate resume: ${err.message}`);
+            setTexCode(`% Generation failed. Please check the .tex output for errors.`);
         } finally {
-            if (!controller.signal.aborted) setIsLoading(false);
-            clearTimeout(timeoutId);
+            setIsLoading(false);
         }
     };
     
@@ -130,7 +118,7 @@ export default function App() {
                     onDrop={handleDrop}
                 >
                     <div className="input-header">
-                       <h1>AI Powered Resume Generator</h1>
+                       <h1>Agentic Resume Generator</h1>
                        <p>Describe your changes and attach your resume. The AI will handle the rest.</p>
                     </div>
                     <div className={`dropzone ${isDragging ? 'dragging-over' : ''}`}>
@@ -196,7 +184,7 @@ export default function App() {
                     <h2>Generated Output</h2>
                     <div className="output-buttons">
                         <button onClick={handleCopyTex} disabled={isLoading}><CopyIcon /> Copy .tex</button>
-                        <a href={pdfUrl} download="resume.pdf" className={!pdfUrl || isLoading ? 'disabled' : ''} onClick={(e) => (!pdfUrl || isLoading) && e.preventDefault()} aria-disabled={!pdfUrl || isLoading}><DownloadIcon/> Download .pdf</a>
+                        <a href={pdfDataUrl} download="resume.pdf" className={!pdfDataUrl || isLoading ? 'disabled' : ''} onClick={(e) => (!pdfDataUrl || isLoading) && e.preventDefault()} aria-disabled={!pdfDataUrl || isLoading}><DownloadIcon/> Download .pdf</a>
                     </div>
                 </header>
                 <main className="output-main">

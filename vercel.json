@@ -5,11 +5,13 @@
       "src": "agentic-resume-frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist"
+        "distDir": "dist",
+        "installCommand": "npm install",
+        "buildCommand": "npm run build"
       }
     },
     {
-      "src": "api/Dockerfile",
+      "src": "api/index.js",
       "use": "@vercel/node"
     }
   ],
