@@ -85,7 +85,7 @@ export default function App() {
                 parsedResumeText = await resumeFile.text();
             }
 
-            const backendUrl = 'http://localhost:3001';
+            const backendUrl = '';
             const response = await fetch(`${backendUrl}/api/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
